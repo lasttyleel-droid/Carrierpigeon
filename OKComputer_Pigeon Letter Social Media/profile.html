@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connections - Pigeon Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&family=Courier+New&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sepia: #8B4513;
+            --cream: #F5F5DC;
+            --navy: #2F4F4F;
+            --off-white: #FEFEFE;
+        }
+        
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: var(--off-white);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 245, 220, 0.5) 0%, transparent 50%);
+        }
+        
+        .font-display { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'Courier New', monospace; }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--sepia);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .friend-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(245,245,220,0.3) 100%);
+        }
+        
+        .friend-card:hover {
+            transform: translateY(-8px) rotate(1deg);
+            box-shadow: 0 20px 40px rgba(139, 69, 19, 0.15);
+        }
+        
+        .achievement-badge {
+            background: linear-gradient(135deg, var(--sepia) 0%, #A0522D 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+        
+        .online-indicator {
+            background: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+        
+        #pigeon-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <canvas id="pigeon-canvas"></canvas>
+    
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm border-b border-sepia/20 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-sepia rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-lg">🕊</span>
+                    </div>
+                    <h1 class="font-display text-2xl font-bold text-sepia">Pigeon Post</h1>
+                </div>
+                <div class="flex space-x-8">
+                    <a href="index.html" class="nav-link text-sepia font-medium">Compose</a>
+                    <a href="profile.html" class="nav-link text-sepia font-medium border-b-2 border-sepia">Connections</a>
+                    <a href="archive.html" class="nav-link text-sepia font-medium">Archive</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Header -->
+    <section class="py-16 bg-gradient-to-br from-cream/30 to-sepia/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-display text-4xl font-bold text-sepia mb-4" data-splitting>Your Correspondence Network</h2>
+                <p class="text-lg text-navy">Building meaningful connections through the art of letter writing</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- User Profile -->
+                <div class="reveal">
+                    <div class="bg-white rounded-lg p-8 shadow-lg border border-sepia/10 text-center">
+                        <div class="relative inline-block mb-6">
+                            <img src="resources/user-avatar-2.png" alt="Your Profile" class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-sepia/20">
+                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-sepia rounded-full flex items-center justify-center">
+                                <span class="text-cream text-sm">🖋</span>
+                            </div>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-sepia mb-2">Your Profile</h3>
+                        <p class="text-navy mb-4">Letter Writer Since 2025</p>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="text-center">
+                                <div class="font-display text-2xl font-bold text-sepia">47</div>
+                                <div class="text-sm text-navy">Letters Sent</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-display text-2xl font-bold text-sepia">32</div>
+                                <div class="text-sm text-navy">Letters Received</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-display text-2xl font-bold text-sepia">12</div>
+                                <div class="text-sm text-navy">Connections</div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="editProfile()" class="w-full bg-sepia text-cream py-2 rounded-lg hover:bg-sepia/90 transition-colors">
+                            Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="reveal">
+                    <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10">
+                        <h3 class="font-display text-xl font-bold text-sepia mb-4">Achievements</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="achievement-badge w-10 h-10 rounded-full flex items-center justify-center">
+                                    <span class="text-cream text-sm">🏆</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-sepia">First Letter</div>
+                                    <div class="text-sm text-navy">Started your journey</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="achievement-badge w-10 h-10 rounded-full flex items-center justify-center">
+                                    <span class="text-cream text-sm">💌</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-sepia">Pen Pal</div>
+                                    <div class="text-sm text-navy">10 letters exchanged</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="achievement-badge w-10 h-10 rounded-full flex items-center justify-center">
+                                    <span class="text-cream text-sm">📚</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-sepia">Storyteller</div>
+                                    <div class="text-sm text-navy">Longest letter: 1,247 words</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-500 text-sm">🎯</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-500">Correspondent</div>
+                                    <div class="text-sm text-gray-400">50 letters (3 more to go!)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Writing Stats -->
+                <div class="reveal">
+                    <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10">
+                        <h3 class="font-display text-xl font-bold text-sepia mb-4">Writing Statistics</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-navy">Letters this month</span>
+                                    <span class="font-medium text-sepia">8</span>
+                                </div>
+                                <div class="w-full bg-cream/50 rounded-full h-2">
+                                    <div class="bg-sepia h-2 rounded-full" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-navy">Average response time</span>
+                                    <span class="font-medium text-sepia">2.3 days</span>
+                                </div>
+                                <div class="w-full bg-cream/50 rounded-full h-2">
+                                    <div class="bg-sepia h-2 rounded-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-navy">Writing streak</span>
+                                    <span class="font-medium text-sepia">12 days</span>
+                                </div>
+                                <div class="w-full bg-cream/50 rounded-full h-2">
+                                    <div class="bg-sepia h-2 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-cream/30 rounded-lg">
+                            <h4 class="font-medium text-sepia mb-2">Current Challenge</h4>
+                            <p class="text-sm text-navy">Write a letter about your favorite place</p>
+                            <div class="mt-2 text-xs text-navy font-mono">Progress: 1/3 letters</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Friends & Connections -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-8 reveal">
+                <h3 class="font-display text-3xl font-bold text-sepia">Your Connections</h3>
+                <button onclick="addFriend()" class="bg-sepia text-cream px-6 py-2 rounded-lg hover:bg-sepia/90 transition-colors">
+                    Add Friend
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Friend Card 1 -->
+                <div class="friend-card rounded-lg p-6 shadow-lg border border-sepia/10 reveal">
+                    <div class="relative mb-4">
+                        <img src="resources/user-avatar-1.png" alt="Elena" class="w-16 h-16 rounded-full object-cover mx-auto">
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 online-indicator rounded-full border-2 border-white"></div>
+                    </div>
+                    <h4 class="font-display text-lg font-semibold text-sepia text-center mb-1">Elena Rodriguez</h4>
+                    <p class="text-sm text-navy text-center mb-3">Literature enthusiast • Spain</p>
+                    <div class="text-center text-xs text-navy font-mono mb-4">
+                        Last letter: 2 days ago
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="writeLetter('elena')" class="flex-1 bg-sepia text-cream py-2 rounded text-sm hover:bg-sepia/90 transition-colors">
+                            Write
+                        </button>
+                        <button onclick="viewHistory('elena')" class="flex-1 border border-sepia text-sepia py-2 rounded text-sm hover:bg-cream/50 transition-colors">
+                            History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Friend Card 2 -->
+                <div class="friend-card rounded-lg p-6 shadow-lg border border-sepia/10 reveal">
+                    <div class="relative mb-4">
+                        <img src="resources/user-avatar-2.png" alt="Marcus" class="w-16 h-16 rounded-full object-cover mx-auto">
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-400 rounded-full border-2 border-white"></div>
+                    </div>
+                    <h4 class="font-display text-lg font-semibold text-sepia text-center mb-1">Marcus Chen</h4>
+                    <p class="text-sm text-navy text-center mb-3">Travel blogger • Canada</p>
+                    <div class="text-center text-xs text-navy font-mono mb-4">
+                        Last letter: 1 week ago
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="writeLetter('marcus')" class="flex-1 bg-sepia text-cream py-2 rounded text-sm hover:bg-sepia/90 transition-colors">
+                            Write
+                        </button>
+                        <button onclick="viewHistory('marcus')" class="flex-1 border border-sepia text-sepia py-2 rounded text-sm hover:bg-cream/50 transition-colors">
+                            History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Friend Card 3 -->
+                <div class="friend-card rounded-lg p-6 shadow-lg border border-sepia/10 reveal">
+                    <div class="relative mb-4">
+                        <img src="resources/user-avatar-1.png" alt="Sophia" class="w-16 h-16 rounded-full object-cover mx-auto">
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 online-indicator rounded-full border-2 border-white"></div>
+                    </div>
+                    <h4 class="font-display text-lg font-semibold text-sepia text-center mb-1">Sophia Williams</h4>
+                    <p class="text-sm text-navy text-center mb-3">Book lover • England</p>
+                    <div class="text-center text-xs text-navy font-mono mb-4">
+                        Last letter: 3 days ago
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="writeLetter('sophia')" class="flex-1 bg-sepia text-cream py-2 rounded text-sm hover:bg-sepia/90 transition-colors">
+                            Write
+                        </button>
+                        <button onclick="viewHistory('sophia')" class="flex-1 border border-sepia text-sepia py-2 rounded text-sm hover:bg-cream/50 transition-colors">
+                            History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Friend Card 4 -->
+                <div class="friend-card rounded-lg p-6 shadow-lg border border-sepia/10 reveal">
+                    <div class="relative mb-4">
+                        <img src="resources/user-avatar-2.png" alt="David" class="w-16 h-16 rounded-full object-cover mx-auto">
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-400 rounded-full border-2 border-white"></div>
+                    </div>
+                    <h4 class="font-display text-lg font-semibold text-sepia text-center mb-1">David Thompson</h4>
+                    <p class="text-sm text-navy text-center mb-3">Musician • Scotland</p>
+                    <div class="text-center text-xs text-navy font-mono mb-4">
+                        Last letter: 2 weeks ago
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="writeLetter('david')" class="flex-1 bg-sepia text-cream py-2 rounded text-sm hover:bg-sepia/90 transition-colors">
+                            Write
+                        </button>
+                        <button onclick="viewHistory('david')" class="flex-1 border border-sepia text-sepia py-2 rounded text-sm hover:bg-cream/50 transition-colors">
+                            History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add New Friend Card -->
+                <div class="friend-card rounded-lg p-6 shadow-lg border border-sepia/10 border-dashed reveal">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-cream/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-sepia text-2xl">+</span>
+                        </div>
+                        <h4 class="font-display text-lg font-semibold text-sepia mb-2">Add New Friend</h4>
+                        <p class="text-sm text-navy mb-4">Expand your correspondence circle</p>
+                        <button onclick="addFriend()" class="w-full bg-sepia/10 text-sepia py-2 rounded text-sm hover:bg-sepia/20 transition-colors">
+                            Find Friends
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Writing Prompts -->
+    <section class="py-16 bg-cream/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h3 class="font-display text-3xl font-bold text-sepia mb-4">Letter Writing Prompts</h3>
+                <p class="text-navy text-lg">Inspiration for your next correspondence</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">🌅</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Morning Reflections</h4>
+                    <p class="text-navy text-sm mb-4">Describe your perfect morning routine and how it sets the tone for your day.</p>
+                    <button onclick="usePrompt('morning')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">🎵</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Musical Memories</h4>
+                    <p class="text-navy text-sm mb-4">Share a song that holds special meaning and the story behind it.</p>
+                    <button onclick="usePrompt('music')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">🌱</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Growth & Change</h4>
+                    <p class="text-navy text-sm mb-4">Write about something new you've learned recently and how it changed your perspective.</p>
+                    <button onclick="usePrompt('growth')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">📚</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Book Conversations</h4>
+                    <p class="text-navy text-sm mb-4">Discuss a book that influenced your life and what you took from it.</p>
+                    <button onclick="usePrompt('books')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">🌙</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Dreams & Aspirations</h4>
+                    <p class="text-navy text-sm mb-4">Share a dream you have and what steps you're taking to achieve it.</p>
+                    <button onclick="usePrompt('dreams')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="text-sepia text-2xl mb-3">🏞️</div>
+                    <h4 class="font-display text-lg font-semibold text-sepia mb-2">Nature's Inspiration</h4>
+                    <p class="text-navy text-sm mb-4">Describe a place in nature that brings you peace and why it's special.</p>
+                    <button onclick="usePrompt('nature')" class="text-sepia text-sm hover:underline">Use this prompt</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sepia text-cream py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <span class="text-2xl">🕊</span>
+                <span class="font-display text-xl font-semibold">Pigeon Post</span>
+            </div>
+            <p class="font-mono text-sm opacity-80">© 2025 Pigeon Post. Rediscovering the art of meaningful correspondence.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

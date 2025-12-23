@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pigeon Post - Social Correspondence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&family=Courier+New&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sepia: #8B4513;
+            --cream: #F5F5DC;
+            --navy: #2F4F4F;
+            --off-white: #FEFEFE;
+        }
+        
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: var(--off-white);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 245, 220, 0.5) 0%, transparent 50%);
+        }
+        
+        .font-display { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'Courier New', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(245, 245, 220, 0.3) 100%);
+        }
+        
+        .letter-paper {
+            background: linear-gradient(to bottom, #fefefe 0%, #f8f6f0 100%);
+            box-shadow: 0 4px 20px rgba(139, 69, 19, 0.1);
+            border: 1px solid rgba(139, 69, 19, 0.1);
+        }
+        
+        .pigeon-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .stamp {
+            transition: all 0.3s ease;
+        }
+        
+        .stamp:hover {
+            transform: rotate(5deg) scale(1.1);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.2);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--sepia);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+        
+        #pigeon-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <canvas id="pigeon-canvas"></canvas>
+    
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-sm border-b border-sepia/20 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-sepia rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-lg">🕊</span>
+                    </div>
+                    <h1 class="font-display text-2xl font-bold text-sepia">Pigeon Post</h1>
+                </div>
+                <div class="flex space-x-8">
+                    <a href="index.html" class="nav-link text-sepia font-medium">Compose</a>
+                    <a href="profile.html" class="nav-link text-sepia font-medium">Connections</a>
+                    <a href="archive.html" class="nav-link text-sepia font-medium">Archive</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg py-16 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <h2 class="font-display text-5xl font-bold text-sepia mb-6 leading-tight" data-splitting>
+                        Rediscover the Art of Letter Writing
+                    </h2>
+                    <p class="text-lg text-navy mb-8 leading-relaxed">
+                        In our digital age of instant messages, experience the joy of thoughtful correspondence. 
+                        Write letters, send them via our virtual carrier pigeons, and build meaningful connections 
+                        that transcend the fleeting nature of modern communication.
+                    </p>
+                    <button onclick="scrollToComposer()" class="bg-sepia text-cream px-8 py-3 rounded-lg font-medium hover:bg-sepia/90 transition-all duration-300 transform hover:scale-105">
+                        Start Writing
+                    </button>
+                </div>
+                <div class="reveal">
+                    <div class="relative">
+                        <img src="resources/hero-pigeon.png" alt="Carrier Pigeon" class="w-full h-auto rounded-lg shadow-2xl pigeon-float">
+                        <div class="absolute -top-4 -right-4 stamp">
+                            <img src="resources/postal-stamp.png" alt="Postal Stamp" class="w-16 h-16">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Letter Composer -->
+    <section id="composer" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h3 class="font-display text-3xl font-bold text-sepia mb-4">Compose Your Letter</h3>
+                <p class="text-navy text-lg">Write with intention, send with care</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Letter Templates -->
+                <div class="reveal">
+                    <div class="bg-white rounded-lg p-6 shadow-lg border border-sepia/10">
+                        <h4 class="font-display text-xl font-semibold text-sepia mb-4">Letter Templates</h4>
+                        <div class="space-y-3">
+                            <button onclick="selectTemplate('formal')" class="template-btn w-full text-left p-3 rounded border border-sepia/20 hover:bg-cream/50 transition-colors">
+                                <div class="font-medium text-sepia">Formal Letter</div>
+                                <div class="text-sm text-navy">Professional correspondence</div>
+                            </button>
+                            <button onclick="selectTemplate('personal')" class="template-btn w-full text-left p-3 rounded border border-sepia/20 hover:bg-cream/50 transition-colors">
+                                <div class="font-medium text-sepia">Personal Letter</div>
+                                <div class="text-sm text-navy">Friendly conversation</div>
+                            </button>
+                            <button onclick="selectTemplate('poetry')" class="template-btn w-full text-left p-3 rounded border border-sepia/20 hover:bg-cream/50 transition-colors">
+                                <div class="font-medium text-sepia">Poetic Letter</div>
+                                <div class="text-sm text-navy">Creative expression</div>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h5 class="font-medium text-sepia mb-3">Writing Prompts</h5>
+                            <div class="text-sm text-navy p-3 bg-cream/30 rounded">
+                                <span id="writing-prompt">"Write about a moment that made you smile today..."</span>
+                            </div>
+                            <button onclick="newPrompt()" class="mt-2 text-sepia text-sm hover:underline">Get new prompt</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Letter Editor -->
+                <div class="lg:col-span-2 reveal">
+                    <div class="letter-paper rounded-lg p-8 min-h-96">
+                        <div class="mb-4">
+                            <label class="block text-sepia font-medium mb-2">To:</label>
+                            <select id="recipient" class="w-full p-3 border border-sepia/30 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-sepia/50">
+                                <option value="">Select a recipient...</option>
+                                <option value="elena">Elena Rodriguez</option>
+                                <option value="marcus">Marcus Chen</option>
+                                <option value="sophia">Sophia Williams</option>
+                                <option value="david">David Thompson</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sepia font-medium mb-2">Subject:</label>
+                            <input type="text" id="subject" placeholder="What is your letter about?" 
+                                   class="w-full p-3 border border-sepia/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-sepia/50">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sepia font-medium mb-2">Your Letter:</label>
+                            <textarea id="letter-content" placeholder="Dear friend..." 
+                                      class="w-full h-64 p-4 border border-sepia/30 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-sepia/50 font-mono text-sm leading-relaxed"
+                                      style="background: linear-gradient(to bottom, transparent 0%, transparent 95%, rgba(139, 69, 19, 0.1) 95%, rgba(139, 69, 19, 0.1) 100%); background-size: 100% 24px;"></textarea>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-navy">
+                                <span id="word-count">0</span> words
+                                <span class="mx-2">•</span>
+                                <span id="save-status" class="text-green-600">Auto-saved</span>
+                            </div>
+                            <div class="space-x-4">
+                                <button onclick="saveDraft()" class="px-6 py-2 border border-sepia text-sepia rounded-lg hover:bg-cream/50 transition-colors">
+                                    Save Draft
+                                </button>
+                                <button onclick="sendLetter()" class="bg-sepia text-cream px-6 py-2 rounded-lg hover:bg-sepia/90 transition-all duration-300 transform hover:scale-105">
+                                    Send Letter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Active Correspondence -->
+    <section class="py-16 bg-cream/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h3 class="font-display text-3xl font-bold text-sepia mb-4">Your Correspondence</h3>
+                <p class="text-navy text-lg">Recent letters and ongoing conversations</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Letter Card 1 -->
+                <div class="letter-card bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="resources/user-avatar-1.png" alt="Elena" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-semibold text-sepia">Elena Rodriguez</h4>
+                            <p class="text-sm text-navy font-mono">2 hours ago</p>
+                        </div>
+                    </div>
+                    <h5 class="font-medium text-sepia mb-2">Thoughts on the changing seasons</h5>
+                    <p class="text-navy text-sm leading-relaxed mb-4">Dearest friend, as autumn paints the leaves in golden hues, I find myself reflecting on the passage of time and the beauty in each transition...</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-navy bg-cream/50 px-2 py-1 rounded">Delivered</span>
+                        <button class="text-sepia hover:underline text-sm">Read Full Letter</button>
+                    </div>
+                </div>
+
+                <!-- Letter Card 2 -->
+                <div class="letter-card bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="resources/user-avatar-2.png" alt="Marcus" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-semibold text-sepia">Marcus Chen</h4>
+                            <p class="text-sm text-navy font-mono">1 day ago</p>
+                        </div>
+                    </div>
+                    <h5 class="font-medium text-sepia mb-2">Travel adventures and discoveries</h5>
+                    <p class="text-navy text-sm leading-relaxed mb-4">My dear companion, the journey continues to surprise me. Yesterday I discovered a small café tucked away in an alley, where the owner told stories of...</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-navy bg-green-100 px-2 py-1 rounded">Read</span>
+                        <button class="text-sepia hover:underline text-sm">Read Full Letter</button>
+                    </div>
+                </div>
+
+                <!-- Letter Card 3 -->
+                <div class="letter-card bg-white rounded-lg p-6 shadow-lg border border-sepia/10 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="resources/user-avatar-1.png" alt="Sophia" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-semibold text-sepia">Sophia Williams</h4>
+                            <p class="text-sm text-navy font-mono">3 days ago</p>
+                        </div>
+                    </div>
+                    <h5 class="font-medium text-sepia mb-2">Books that changed my perspective</h5>
+                    <p class="text-navy text-sm leading-relaxed mb-4">Beloved friend, I recently finished reading "The Seven Husbands of Evelyn Hugo" and found myself completely absorbed in the narrative. The way the author...</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-navy bg-yellow-100 px-2 py-1 rounded">In Transit</span>
+                        <button class="text-sepia hover:underline text-sm">Track Letter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sepia text-cream py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <span class="text-2xl">🕊</span>
+                <span class="font-display text-xl font-semibold">Pigeon Post</span>
+            </div>
+            <p class="font-mono text-sm opacity-80">© 2025 Pigeon Post. Rediscovering the art of meaningful correspondence.</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
